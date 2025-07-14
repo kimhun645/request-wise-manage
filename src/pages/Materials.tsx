@@ -1,0 +1,440 @@
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Plus, 
+  Search, 
+  Edit, 
+  Trash2, 
+  Package, 
+  Tag,
+  BarChart3,
+  AlertTriangle,
+  TrendingDown,
+  TrendingUp
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Mock data วัสดุ
+const mockMaterials = [
+  {
+    id: "MAT-001",
+    name: "กระดาษ A4",
+    category: "เครื่องเขียน",
+    stock: 50,
+    minStock: 20,
+    maxStock: 100,
+    unit: "รีม",
+    price: 90,
+    barcode: "8850999320101",
+    supplier: "บริษัท ABC จำกัด",
+    lastReceived: "2024-01-10"
+  },
+  {
+    id: "MAT-002", 
+    name: "ปากกาลูกลื่น",
+    category: "เครื่องเขียน",
+    stock: 200,
+    minStock: 50,
+    maxStock: 300,
+    unit: "ด้าม",
+    price: 15,
+    barcode: "8850999320102",
+    supplier: "บริษัท XYZ จำกัด",
+    lastReceived: "2024-01-08"
+  },
+  {
+    id: "MAT-003",
+    name: "แฟ้ม",
+    category: "เครื่องเขียน", 
+    stock: 15,
+    minStock: 30,
+    maxStock: 80,
+    unit: "เล่ม",
+    price: 25,
+    barcode: "8850999320103",
+    supplier: "บริษัท ABC จำกัด",
+    lastReceived: "2024-01-05"
+  },
+  {
+    id: "MAT-004",
+    name: "เมาส์ไร้สาย",
+    category: "อุปกรณ์ IT",
+    stock: 8,
+    minStock: 10,
+    maxStock: 25,
+    unit: "ชิ้น",
+    price: 450,
+    barcode: "8850999320104",
+    supplier: "บริษัท Tech จำกัด",
+    lastReceived: "2024-01-03"
+  }
+];
+
+const mockCategories = [
+  { id: "CAT-001", name: "เครื่องเขียน", itemCount: 145 },
+  { id: "CAT-002", name: "อุปกรณ์ IT", itemCount: 32 },
+  { id: "CAT-003", name: "วัสดุทำความสะอาด", itemCount: 28 },
+  { id: "CAT-004", name: "อุปกรณ์สำนักงาน", itemCount: 67 }
+];
+
+const Materials = () => {
+  const [activeTab, setActiveTab] = useState<"materials" | "categories">("materials");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+
+  const getStockStatus = (current: number, min: number) => {
+    if (current <= min) {
+      return { label: "สต็อกต่ำ", variant: "destructive" as const, icon: AlertTriangle };
+    } else if (current <= min * 1.5) {
+      return { label: "ใกล้หมด", variant: "secondary" as const, icon: TrendingDown };
+    } else {
+      return { label: "ปกติ", variant: "default" as const, icon: TrendingUp };
+    }
+  };
+
+  const filteredMaterials = mockMaterials.filter(material => {
+    const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         material.barcode.includes(searchTerm) ||
+                         material.id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = categoryFilter === "all" || material.category === categoryFilter;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  const lowStockItems = mockMaterials.filter(m => m.stock <= m.minStock);
+
+  return (
+    <DashboardLayout 
+      title="จัดการวัสดุ" 
+      subtitle="จัดการวัสดุและหมวดหมู่ในระบบ"
+    >
+      <div className="space-y-6">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Package className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{mockMaterials.length}</p>
+                  <p className="text-sm text-muted-foreground">วัสดุทั้งหมด</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-warning" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{lowStockItems.length}</p>
+                  <p className="text-sm text-muted-foreground">สต็อกต่ำ</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                  <Tag className="w-5 h-5 text-success" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{mockCategories.length}</p>
+                  <p className="text-sm text-muted-foreground">หมวดหมู่</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    ฿{mockMaterials.reduce((sum, m) => sum + (m.stock * m.price), 0).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">มูลค่าสต็อก</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-4">
+          <Button 
+            variant={activeTab === "materials" ? "default" : "outline"}
+            onClick={() => setActiveTab("materials")}
+            className="gap-2"
+          >
+            <Package className="w-4 h-4" />
+            จัดการวัสดุ
+          </Button>
+          <Button 
+            variant={activeTab === "categories" ? "default" : "outline"}
+            onClick={() => setActiveTab("categories")}
+            className="gap-2"
+          >
+            <Tag className="w-4 h-4" />
+            จัดการหมวดหมู่
+          </Button>
+        </div>
+
+        {activeTab === "materials" && (
+          <div className="space-y-6">
+            {/* Search and Actions */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="flex gap-3 flex-1">
+                    <Input
+                      placeholder="ค้นหาวัสดุ, Barcode, รหัส..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="max-w-sm"
+                    />
+                    
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="หมวดหมู่" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
+                        <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
+                        <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
+                        <SelectItem value="วัสดุทำความสะอาด">วัสดุทำความสะอาด</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        เพิ่มวัสดุใหม่
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>เพิ่มวัสดุใหม่</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="material-name">ชื่อวัสดุ</Label>
+                          <Input id="material-name" placeholder="ชื่อวัสดุ" />
+                        </div>
+                        <div>
+                          <Label htmlFor="material-category">หมวดหมู่</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกหมวดหมู่" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
+                              <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="material-unit">หน่วย</Label>
+                            <Input id="material-unit" placeholder="ชิ้น, กล่อง, รีม" />
+                          </div>
+                          <div>
+                            <Label htmlFor="material-price">ราคา</Label>
+                            <Input id="material-price" type="number" placeholder="0.00" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="min-stock">สต็อกขั้นต่ำ</Label>
+                            <Input id="min-stock" type="number" placeholder="0" />
+                          </div>
+                          <div>
+                            <Label htmlFor="max-stock">สต็อกสูงสุด</Label>
+                            <Input id="max-stock" type="number" placeholder="0" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="barcode">Barcode</Label>
+                          <Input id="barcode" placeholder="8850999320101" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button className="flex-1">บันทึก</Button>
+                          <Button variant="outline" onClick={() => setIsAddMaterialOpen(false)}>
+                            ยกเลิก
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Materials Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>รายการวัสดุ ({filteredMaterials.length} รายการ)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>รหัส</TableHead>
+                      <TableHead>ชื่อวัสดุ</TableHead>
+                      <TableHead>หมวดหมู่</TableHead>
+                      <TableHead>สต็อก</TableHead>
+                      <TableHead>หน่วย</TableHead>
+                      <TableHead>ราคา</TableHead>
+                      <TableHead>สถานะ</TableHead>
+                      <TableHead>Barcode</TableHead>
+                      <TableHead>การดำเนินการ</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredMaterials.map((material) => {
+                      const status = getStockStatus(material.stock, material.minStock);
+                      const StatusIcon = status.icon;
+                      
+                      return (
+                        <TableRow key={material.id}>
+                          <TableCell className="font-medium">{material.id}</TableCell>
+                          <TableCell>{material.name}</TableCell>
+                          <TableCell>{material.category}</TableCell>
+                          <TableCell>
+                            <span className={material.stock <= material.minStock ? "text-destructive font-medium" : ""}>
+                              {material.stock}/{material.maxStock}
+                            </span>
+                          </TableCell>
+                          <TableCell>{material.unit}</TableCell>
+                          <TableCell>฿{material.price}</TableCell>
+                          <TableCell>
+                            <Badge variant={status.variant} className="gap-1">
+                              <StatusIcon className="w-3 h-3" />
+                              {status.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">{material.barcode}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-destructive">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "categories" && (
+          <div className="space-y-6">
+            {/* Add Category */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">จัดการหมวดหมู่</h3>
+                  <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        เพิ่มหมวดหมู่ใหม่
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>เพิ่มหมวดหมู่ใหม่</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="category-name">ชื่อหมวดหมู่</Label>
+                          <Input id="category-name" placeholder="ชื่อหมวดหมู่" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button className="flex-1">บันทึก</Button>
+                          <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>
+                            ยกเลิก
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Categories Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockCategories.map((category) => (
+                <Card key={category.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-medium">{category.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {category.itemCount} รายการ
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Materials;

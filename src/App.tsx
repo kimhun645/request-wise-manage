@@ -9,6 +9,10 @@ import ScanBarcode from "./pages/ScanBarcode";
 import ReceiveMaterial from "./pages/ReceiveMaterial";
 import ReturnMaterial from "./pages/ReturnMaterial";
 import Reports from "./pages/Reports";
+import History from "./pages/History";
+import Materials from "./pages/Materials";
+import Approvals from "./pages/Approvals";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +30,10 @@ const App = () => (
           <Route path="/receive" element={<ReceiveMaterial />} />
           <Route path="/return" element={<ReturnMaterial />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/materials" element={<Materials />} />
+          <Route path="/approvals" element={<Approvals />} />
+          <Route path="/users" element={<Users />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
