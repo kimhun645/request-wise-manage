@@ -81,6 +81,20 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			boxShadow: {
+				'neumorph': 'var(--shadow-neumorphism)',
+				'neumorph-inset': 'var(--shadow-neumorphism-inset)',
+				'neumorph-small': 'var(--shadow-neumorphism-small)',
+				'neumorph-pressed': 'var(--shadow-neumorphism-pressed)',
+				'neumorph-hover': 'var(--shadow-hover)'
+			},
+			backgroundImage: {
+				'gradient-neumorph': 'var(--gradient-card)',
+				'gradient-neumorph-button': 'var(--gradient-button)',
+				'gradient-neumorph-inset': 'var(--gradient-inset)',
+				'gradient-neumorph-primary': 'var(--gradient-primary)',
+				'gradient-neumorph-hero': 'var(--gradient-hero)'
+			},
 			keyframes: {
 				'accordion-down': {
 					from: { height: '0', opacity: '0' },

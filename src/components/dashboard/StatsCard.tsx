@@ -26,15 +26,15 @@ export function StatsCard({
   variant = "default" 
 }: StatsCardProps) {
   const variantStyles = {
-    default: "border-border bg-card",
-    success: "border-success/20 bg-success/5",
-    warning: "border-warning/20 bg-warning/5", 
-    danger: "border-destructive/20 bg-destructive/5"
+    default: "neumorph hover:shadow-neumorph-hover",
+    success: "neumorph text-success hover:shadow-neumorph-hover",
+    warning: "neumorph text-warning hover:shadow-neumorph-hover", 
+    danger: "neumorph text-destructive hover:shadow-neumorph-hover"
   };
 
   return (
     <Card className={cn(
-      "transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-pointer",
+      "transition-all duration-300 hover:translate-y-[-2px] cursor-pointer",
       variantStyles[variant],
       className
     )}>
@@ -44,11 +44,11 @@ export function StatsCard({
         </CardTitle>
         {icon && (
           <div className={cn(
-            "p-2 rounded-lg",
-            variant === "success" && "bg-success/10 text-success",
-            variant === "warning" && "bg-warning/10 text-warning",
-            variant === "danger" && "bg-destructive/10 text-destructive",
-            variant === "default" && "bg-primary/10 text-primary"
+            "p-2 rounded-lg neumorph-small",
+            variant === "success" && "text-success",
+            variant === "warning" && "text-warning",
+            variant === "danger" && "text-destructive",
+            variant === "default" && "text-primary"
           )}>
             {icon}
           </div>
