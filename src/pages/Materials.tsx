@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,7 +92,7 @@ const mockMaterials = [
   }
 ];
 
-const mockCategories = [
+const initialCategories = [
   { id: "CAT-001", name: "เครื่องเขียน", itemCount: 145 },
   { id: "CAT-002", name: "อุปกรณ์ IT", itemCount: 32 },
   { id: "CAT-003", name: "วัสดุทำความสะอาด", itemCount: 28 },
@@ -98,11 +100,72 @@ const mockCategories = [
 ];
 
 const Materials = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"materials" | "categories">("materials");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) {
+      toast({
+        title: "ข้อผิดพลาด",
+        description: "กรุณากรอกชื่อหมวดหมู่",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if category already exists
+    if (categories.some(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase())) {
+      toast({
+        title: "ข้อผิดพลาด", 
+        description: "หมวดหมู่นี้มีอยู่แล้ว",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Generate new ID
+    const newId = `CAT-${String(categories.length + 1).padStart(3, '0')}`;
+    
+    // Add new category
+    const newCategory = {
+      id: newId,
+      name: newCategoryName.trim(),
+      itemCount: 0
+    };
+
+    setCategories([...categories, newCategory]);
+    setNewCategoryName("");
+    setIsAddCategoryOpen(false);
+    
+    toast({
+      title: "สำเร็จ",
+      description: `เพิ่มหมวดหมู่ "${newCategoryName}" เรียบร้อยแล้ว`,
+    });
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    const categoryToDelete = categories.find(cat => cat.id === categoryId);
+    if (categoryToDelete && categoryToDelete.itemCount > 0) {
+      toast({
+        title: "ไม่สามารถลบได้",
+        description: "ไม่สามารถลบหมวดหมู่ที่มีสินค้าอยู่",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCategories(categories.filter(cat => cat.id !== categoryId));
+    toast({
+      title: "สำเร็จ",
+      description: "ลบหมวดหมู่เรียบร้อยแล้ว",
+    });
+  };
 
   const getStockStatus = (current: number, min: number) => {
     if (current <= min) {
@@ -169,7 +232,7 @@ const Materials = () => {
                   <Tag className="w-5 h-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{mockCategories.length}</p>
+                  <p className="text-2xl font-bold">{categories.length}</p>
                   <p className="text-sm text-muted-foreground">หมวดหมู่</p>
                 </div>
               </div>
@@ -390,11 +453,19 @@ const Materials = () => {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="category-name">ชื่อหมวดหมู่</Label>
-                          <Input id="category-name" placeholder="ชื่อหมวดหมู่" />
+                          <Input 
+                            id="category-name" 
+                            placeholder="ชื่อหมวดหมู่" 
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                          />
                         </div>
                         <div className="flex gap-2">
-                          <Button className="flex-1">บันทึก</Button>
-                          <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>
+                          <Button onClick={handleAddCategory} className="flex-1">บันทึก</Button>
+                          <Button variant="outline" onClick={() => {
+                            setIsAddCategoryOpen(false);
+                            setNewCategoryName("");
+                          }}>
                             ยกเลิก
                           </Button>
                         </div>
@@ -407,7 +478,7 @@ const Materials = () => {
 
             {/* Categories Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockCategories.map((category) => (
+              {categories.map((category) => (
                 <Card key={category.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -417,14 +488,19 @@ const Materials = () => {
                           {category.itemCount} รายการ
                         </p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive"
+                            onClick={() => handleDeleteCategory(category.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -433,6 +509,7 @@ const Materials = () => {
           </div>
         )}
       </div>
+      <Toaster />
     </DashboardLayout>
   );
 };
