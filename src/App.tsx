@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Requisition from "./pages/Requisition";
 import ScanBarcode from "./pages/ScanBarcode";
+import ReceiveMaterial from "./pages/ReceiveMaterial";
+import ReturnMaterial from "./pages/ReturnMaterial";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +23,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/requisition" element={<Requisition />} />
           <Route path="/scan" element={<ScanBarcode />} />
+          <Route path="/receive" element={<ReceiveMaterial />} />
+          <Route path="/return" element={<ReturnMaterial />} />
+          <Route path="/reports" element={<Reports />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
