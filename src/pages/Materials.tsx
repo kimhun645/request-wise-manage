@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { format, isAfter, isBefore, addDays, parseISO } from "date-fns";
+import { th } from "date-fns/locale";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,10 @@ import {
   BarChart3,
   AlertTriangle,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import {
   Table,
@@ -49,7 +54,8 @@ const mockMaterials = [
     price: 90,
     barcode: "8850999320101",
     supplier: "บริษัท ABC จำกัด",
-    lastReceived: "2024-01-10"
+    lastReceived: "2024-01-10",
+    expiryDate: null
   },
   {
     id: "MAT-002", 
@@ -62,7 +68,8 @@ const mockMaterials = [
     price: 15,
     barcode: "8850999320102",
     supplier: "บริษัท XYZ จำกัด",
-    lastReceived: "2024-01-08"
+    lastReceived: "2024-01-08",
+    expiryDate: null
   },
   {
     id: "MAT-003",
@@ -75,7 +82,8 @@ const mockMaterials = [
     price: 25,
     barcode: "8850999320103",
     supplier: "บริษัท ABC จำกัด",
-    lastReceived: "2024-01-05"
+    lastReceived: "2024-01-05",
+    expiryDate: null
   },
   {
     id: "MAT-004",
@@ -88,7 +96,36 @@ const mockMaterials = [
     price: 450,
     barcode: "8850999320104",
     supplier: "บริษัท Tech จำกัด",
-    lastReceived: "2024-01-03"
+    lastReceived: "2024-01-03",
+    expiryDate: null
+  },
+  {
+    id: "MAT-005",
+    name: "พาราเซตามอล 500mg",
+    category: "ยา",
+    stock: 100,
+    minStock: 50,
+    maxStock: 200,
+    unit: "เม็ด",
+    price: 2,
+    barcode: "8850999320105",
+    supplier: "โรงพยาบาลรัฐ",
+    lastReceived: "2024-01-01",
+    expiryDate: "2024-12-31"
+  },
+  {
+    id: "MAT-006",
+    name: "แอลกอฮอล์ 70%",
+    category: "ยา",
+    stock: 25,
+    minStock: 20,
+    maxStock: 50,
+    unit: "ขวด",
+    price: 35,
+    barcode: "8850999320106",
+    supplier: "บริษัท เมดิคอล จำกัด",
+    lastReceived: "2024-01-15",
+    expiryDate: "2025-01-20"
   }
 ];
 
@@ -96,7 +133,8 @@ const initialCategories = [
   { id: "CAT-001", name: "เครื่องเขียน", itemCount: 145 },
   { id: "CAT-002", name: "อุปกรณ์ IT", itemCount: 32 },
   { id: "CAT-003", name: "วัสดุทำความสะอาด", itemCount: 28 },
-  { id: "CAT-004", name: "อุปกรณ์สำนักงาน", itemCount: 67 }
+  { id: "CAT-004", name: "อุปกรณ์สำนักงาน", itemCount: 67 },
+  { id: "CAT-005", name: "ยา", itemCount: 15 }
 ];
 
 const Materials = () => {
@@ -108,6 +146,26 @@ const Materials = () => {
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [categories, setCategories] = useState(initialCategories);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const getExpiryStatus = (expiryDate: string | null) => {
+    if (!expiryDate) return null;
+    
+    const expiry = parseISO(expiryDate);
+    const today = new Date();
+    const warningDate = addDays(today, 30); // แจ้งเตือนก่อนหมดอายุ 30 วัน
+    const criticalDate = addDays(today, 7); // วิกฤติก่อนหมดอายุ 7 วัน
+    
+    if (isBefore(expiry, today)) {
+      return { label: "หมดอายุแล้ว", variant: "destructive" as const, icon: AlertCircle };
+    } else if (isBefore(expiry, criticalDate)) {
+      return { label: "ใกล้หมดอายุ", variant: "destructive" as const, icon: Clock };
+    } else if (isBefore(expiry, warningDate)) {
+      return { label: "เตือนหมดอายุ", variant: "secondary" as const, icon: Calendar };
+    } else {
+      return { label: "ปกติ", variant: "default" as const, icon: Calendar };
+    }
+  };
 
   const handleAddCategory = () => {
     if (!newCategoryName.trim()) {
@@ -188,6 +246,26 @@ const Materials = () => {
   });
 
   const lowStockItems = mockMaterials.filter(m => m.stock <= m.minStock);
+  const expiringItems = mockMaterials.filter(m => {
+    if (!m.expiryDate) return false;
+    const expiry = parseISO(m.expiryDate);
+    const warningDate = addDays(new Date(), 30);
+    return isBefore(expiry, warningDate);
+  });
+
+  // Show expiry alerts
+  useEffect(() => {
+    expiringItems.forEach(item => {
+      const expiryStatus = getExpiryStatus(item.expiryDate);
+      if (expiryStatus && (expiryStatus.label === "หมดอายุแล้ว" || expiryStatus.label === "ใกล้หมดอายุ")) {
+        toast({
+          title: `${item.name} - ${expiryStatus.label}`,
+          description: `วันหมดอายุ: ${format(parseISO(item.expiryDate!), 'dd MMM yyyy', { locale: th })}`,
+          variant: "destructive",
+        });
+      }
+    });
+  }, []);
 
   return (
     <DashboardLayout 
@@ -220,6 +298,20 @@ const Materials = () => {
                 <div>
                   <p className="text-2xl font-bold">{lowStockItems.length}</p>
                   <p className="text-sm text-muted-foreground">สต็อกต่ำ</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{expiringItems.length}</p>
+                  <p className="text-sm text-muted-foreground">ใกล้หมดอายุ</p>
                 </div>
               </div>
             </CardContent>
@@ -298,7 +390,7 @@ const Materials = () => {
                         <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
                         <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
                         <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
-                        <SelectItem value="วัสดุทำความสะอาด">วัสดุทำความสะอาด</SelectItem>
+                        <SelectItem value="ยา">ยา</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -321,16 +413,18 @@ const Materials = () => {
                         </div>
                         <div>
                           <Label htmlFor="material-category">หมวดหมู่</Label>
-                          <Select>
+                          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                             <SelectTrigger>
                               <SelectValue placeholder="เลือกหมวดหมู่" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
-                              <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
+                        <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
+                        <SelectItem value="วัสดุทำความสะอาด">วัสดุทำความสะอาด</SelectItem>
+                        <SelectItem value="ยา">ยา</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="material-unit">หน่วย</Label>
@@ -355,9 +449,21 @@ const Materials = () => {
                           <Label htmlFor="barcode">Barcode</Label>
                           <Input id="barcode" placeholder="8850999320101" />
                         </div>
+                        
+                        {/* วันหมดอายุสำหรับยาเท่านั้น */}
+                        {selectedCategory === "ยา" && (
+                          <div>
+                            <Label htmlFor="expiry-date">วันหมดอายุ</Label>
+                            <Input id="expiry-date" type="date" />
+                          </div>
+                        )}
+                        
                         <div className="flex gap-2">
                           <Button className="flex-1">บันทึก</Button>
-                          <Button variant="outline" onClick={() => setIsAddMaterialOpen(false)}>
+                          <Button variant="outline" onClick={() => {
+                            setIsAddMaterialOpen(false);
+                            setSelectedCategory("");
+                          }}>
                             ยกเลิก
                           </Button>
                         </div>
@@ -374,59 +480,79 @@ const Materials = () => {
                 <CardTitle>รายการวัสดุ ({filteredMaterials.length} รายการ)</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>รหัส</TableHead>
-                      <TableHead>ชื่อวัสดุ</TableHead>
-                      <TableHead>หมวดหมู่</TableHead>
-                      <TableHead>สต็อก</TableHead>
-                      <TableHead>หน่วย</TableHead>
-                      <TableHead>ราคา</TableHead>
-                      <TableHead>สถานะ</TableHead>
-                      <TableHead>Barcode</TableHead>
-                      <TableHead>การดำเนินการ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMaterials.map((material) => {
-                      const status = getStockStatus(material.stock, material.minStock);
-                      const StatusIcon = status.icon;
-                      
-                      return (
-                        <TableRow key={material.id}>
-                          <TableCell className="font-medium">{material.id}</TableCell>
-                          <TableCell>{material.name}</TableCell>
-                          <TableCell>{material.category}</TableCell>
-                          <TableCell>
-                            <span className={material.stock <= material.minStock ? "text-destructive font-medium" : ""}>
-                              {material.stock}/{material.maxStock}
-                            </span>
-                          </TableCell>
-                          <TableCell>{material.unit}</TableCell>
-                          <TableCell>฿{material.price}</TableCell>
-                          <TableCell>
-                            <Badge variant={status.variant} className="gap-1">
-                              <StatusIcon className="w-3 h-3" />
-                              {status.label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">{material.barcode}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="sm">
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-destructive">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>รหัส</TableHead>
+                        <TableHead>ชื่อวัสดุ</TableHead>
+                        <TableHead>หมวดหมู่</TableHead>
+                        <TableHead>สต็อก</TableHead>
+                        <TableHead>หน่วย</TableHead>
+                        <TableHead>ราคา</TableHead>
+                        <TableHead>สถานะ</TableHead>
+                        <TableHead>วันหมดอายุ</TableHead>
+                        <TableHead>Barcode</TableHead>
+                        <TableHead>การดำเนินการ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMaterials.map((material) => {
+                        const stockStatus = getStockStatus(material.stock, material.minStock);
+                        const expiryStatus = getExpiryStatus(material.expiryDate);
+                        const StockIcon = stockStatus.icon;
+                        const ExpiryIcon = expiryStatus?.icon;
+                        
+                        return (
+                          <TableRow key={material.id}>
+                            <TableCell className="font-medium">{material.id}</TableCell>
+                            <TableCell>{material.name}</TableCell>
+                            <TableCell>{material.category}</TableCell>
+                            <TableCell>
+                              <span className={material.stock <= material.minStock ? "text-destructive font-medium" : ""}>
+                                {material.stock}/{material.maxStock}
+                              </span>
+                            </TableCell>
+                            <TableCell>{material.unit}</TableCell>
+                            <TableCell>฿{material.price}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant={stockStatus.variant} className="gap-1">
+                                  <StockIcon className="w-3 h-3" />
+                                  {stockStatus.label}
+                                </Badge>
+                                {expiryStatus && (
+                                  <Badge variant={expiryStatus.variant} className="gap-1">
+                                    <ExpiryIcon className="w-3 h-3" />
+                                    {expiryStatus.label}
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {material.expiryDate ? (
+                                <span className={expiryStatus?.variant === "destructive" ? "text-destructive font-medium" : ""}>
+                                  {format(parseISO(material.expiryDate), 'dd/MM/yyyy')}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">{material.barcode}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="text-destructive">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
               </CardContent>
             </Card>
           </div>
