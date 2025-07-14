@@ -57,17 +57,18 @@ export function AppSidebar() {
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+      ? "neumorph-pressed text-primary font-medium" 
+      : "neumorph-button text-sidebar-foreground hover:shadow-neumorph-hover";
 
   return (
     <Sidebar
-      className={`transition-all duration-300 ${collapsed ? "w-14" : "w-64"} border-r border-sidebar-border bg-sidebar`}
+      className={`transition-all duration-300 ${collapsed ? "w-14" : "w-64"} neumorph z-50`}
+      style={{ backgroundColor: 'hsl(var(--sidebar-background))' }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 neumorph-small" style={{ borderBottom: '1px solid hsl(var(--sidebar-border))' }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg neumorph-small bg-primary flex items-center justify-center">
             <Package className="w-5 h-5 text-primary-foreground" />
           </div>
           {!collapsed && (
@@ -103,7 +104,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <Separator className="my-3 bg-sidebar-border" />
+        <Separator className="my-3 neumorph-small" style={{ backgroundColor: 'hsl(var(--sidebar-border))' }} />
 
         {/* Management */}
         <SidebarGroup>
@@ -128,7 +129,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <Separator className="my-3 bg-sidebar-border" />
+        <Separator className="my-3 neumorph-small" style={{ backgroundColor: 'hsl(var(--sidebar-border))' }} />
 
         {/* System */}
         <SidebarGroup>
@@ -156,11 +157,11 @@ export function AppSidebar() {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="p-4 border-t border-sidebar-border animate-fade-in">
+        <div className="p-4 neumorph-small" style={{ borderTop: '1px solid hsl(var(--sidebar-border))' }}>
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full justify-start text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent"
+            className="w-full justify-start neumorph-button hover:shadow-neumorph-hover text-sidebar-foreground"
           >
             <LogOut className="w-4 h-4 mr-2" />
             ออกจากระบบ

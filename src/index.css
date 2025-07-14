@@ -80,14 +80,14 @@ All colors MUST be HSL. Soft, extruded plastic look with subtle depth.
       8px 8px 16px hsl(220 15% 78%),
       -8px -8px 16px hsl(220 15% 99%);
 
-    /* Sidebar colors - Soft comfortable */
-    --sidebar-background: 220 15% 94%;
-    --sidebar-foreground: 220 10% 25%;
+    /* Sidebar colors - Better contrast for visibility */
+    --sidebar-background: 220 15% 88%;
+    --sidebar-foreground: 220 15% 15%;
     --sidebar-primary: 160 25% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 90%;
-    --sidebar-accent-foreground: 220 10% 25%;
-    --sidebar-border: 220 15% 88%;
+    --sidebar-accent: 220 15% 82%;
+    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-border: 220 15% 75%;
     --sidebar-ring: 160 25% 48%;
   }
 
@@ -153,13 +153,13 @@ All colors MUST be HSL. Soft, extruded plastic look with subtle depth.
       8px 8px 16px hsl(220 15% 4%),
       -8px -8px 16px hsl(220 15% 20%);
 
-    --sidebar-background: 220 15% 10%;
-    --sidebar-foreground: 220 15% 88%;
+    --sidebar-background: 220 15% 16%;
+    --sidebar-foreground: 220 15% 85%;
     --sidebar-primary: 160 25% 58%;
     --sidebar-primary-foreground: 220 15% 12%;
-    --sidebar-accent: 220 15% 16%;
-    --sidebar-accent-foreground: 220 15% 88%;
-    --sidebar-border: 220 15% 22%;
+    --sidebar-accent: 220 15% 22%;
+    --sidebar-accent-foreground: 220 15% 85%;
+    --sidebar-border: 220 15% 28%;
     --sidebar-ring: 160 25% 58%;
   }
 }

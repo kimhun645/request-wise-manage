@@ -22,7 +22,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
           <header className="h-16 neumorph-small backdrop-blur supports-[backdrop-filter]:bg-card/50">
             <div className="flex items-center justify-between h-full px-6">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="neumorph-button hover:shadow-neumorph-hover" />
+                <SidebarTrigger className="neumorph-button hover:shadow-neumorph-hover text-foreground bg-card" />
                 {title && (
                   <div className="animate-fade-in">
                     <h1 className="text-lg font-semibold text-foreground">{title}</h1>
