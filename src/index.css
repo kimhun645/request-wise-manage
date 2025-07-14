@@ -8,159 +8,159 @@ All colors MUST be HSL. Soft, extruded plastic look with subtle depth.
 
 @layer base {
   :root {
-    /* Base colors - Warm gray palette */
-    --background: 30 15% 94%;
-    --foreground: 30 10% 9%;
+    /* Base colors - Soft comfortable palette */
+    --background: 220 15% 96%;
+    --foreground: 220 10% 25%;
 
-    /* Card colors - Slightly different from background for depth */
-    --card: 30 15% 96%;
-    --card-foreground: 30 10% 9%;
+    /* Card colors - Very gentle contrast */
+    --card: 220 15% 98%;
+    --card-foreground: 220 10% 25%;
 
     /* Popover colors */
-    --popover: 30 15% 96%;
-    --popover-foreground: 30 10% 9%;
+    --popover: 220 15% 98%;
+    --popover-foreground: 220 10% 25%;
 
-    /* Primary - Warm teal */
-    --primary: 180 45% 45%;
+    /* Primary - Soft sage green */
+    --primary: 160 25% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 180 45% 55%;
+    --primary-glow: 160 25% 58%;
 
-    /* Secondary - Warm coral */
-    --secondary: 15 65% 58%;
+    /* Secondary - Soft lavender */
+    --secondary: 260 20% 58%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Muted colors - Essential for neumorphism */
-    --muted: 30 15% 88%;
-    --muted-foreground: 30 10% 40%;
+    /* Muted colors - Very gentle */
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 10% 50%;
 
-    /* Accent - Golden amber */
-    --accent: 45 85% 58%;
+    /* Accent - Soft peach */
+    --accent: 25 35% 65%;
     --accent-foreground: 0 0% 100%;
 
-    /* Destructive - Warm red */
-    --destructive: 5 75% 58%;
+    /* Destructive - Soft coral */
+    --destructive: 10 40% 65%;
     --destructive-foreground: 0 0% 100%;
 
     /* UI elements */
-    --border: 30 15% 82%;
-    --input: 30 15% 96%;
-    --ring: 180 45% 45%;
+    --border: 220 15% 88%;
+    --input: 220 15% 98%;
+    --ring: 160 25% 48%;
 
     --radius: 1rem;
 
-    /* Status colors - Warm palette */
-    --success: 120 45% 45%;
+    /* Status colors - All soft and gentle */
+    --success: 140 25% 48%;
     --success-foreground: 0 0% 100%;
-    --warning: 40 85% 58%;
+    --warning: 45 35% 65%;
     --warning-foreground: 0 0% 100%;
-    --info: 200 65% 55%;
+    --info: 200 25% 58%;
     --info-foreground: 0 0% 100%;
 
-    /* Neumorphism gradients */
+    /* Neumorphism gradients - Very subtle */
     --gradient-primary: linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-hero: linear-gradient(145deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(30 15% 98%), hsl(30 15% 90%));
+    --gradient-card: linear-gradient(145deg, hsl(220 15% 99%), hsl(220 15% 94%));
     --gradient-button: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
     --gradient-inset: linear-gradient(145deg, hsl(var(--muted)), hsl(var(--card)));
 
-    /* Neumorphism shadows - Warm tones */
+    /* Neumorphism shadows - Very soft */
     --shadow-neumorphism: 
-      8px 8px 16px hsl(30 15% 75%),
-      -8px -8px 16px hsl(30 15% 99%);
+      6px 6px 12px hsl(220 15% 82%),
+      -6px -6px 12px hsl(220 15% 99%);
     --shadow-neumorphism-inset: 
-      inset 8px 8px 16px hsl(30 15% 75%),
-      inset -8px -8px 16px hsl(30 15% 99%);
+      inset 6px 6px 12px hsl(220 15% 82%),
+      inset -6px -6px 12px hsl(220 15% 99%);
     --shadow-neumorphism-small: 
-      4px 4px 8px hsl(30 15% 80%),
-      -4px -4px 8px hsl(30 15% 99%);
+      3px 3px 6px hsl(220 15% 85%),
+      -3px -3px 6px hsl(220 15% 99%);
     --shadow-neumorphism-pressed: 
-      inset 4px 4px 8px hsl(30 15% 75%),
-      inset -4px -4px 8px hsl(30 15% 99%);
+      inset 3px 3px 6px hsl(220 15% 82%),
+      inset -3px -3px 6px hsl(220 15% 99%);
     --shadow-hover: 
-      12px 12px 24px hsl(30 15% 70%),
-      -12px -12px 24px hsl(30 15% 99%);
+      8px 8px 16px hsl(220 15% 78%),
+      -8px -8px 16px hsl(220 15% 99%);
 
-    /* Sidebar colors - Warm neumorphism */
-    --sidebar-background: 30 15% 92%;
-    --sidebar-foreground: 30 10% 9%;
-    --sidebar-primary: 180 45% 45%;
+    /* Sidebar colors - Soft comfortable */
+    --sidebar-background: 220 15% 94%;
+    --sidebar-foreground: 220 10% 25%;
+    --sidebar-primary: 160 25% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 15% 86%;
-    --sidebar-accent-foreground: 30 10% 9%;
-    --sidebar-border: 30 15% 82%;
-    --sidebar-ring: 180 45% 45%;
+    --sidebar-accent: 220 15% 90%;
+    --sidebar-accent-foreground: 220 10% 25%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 160 25% 48%;
   }
 
   .dark {
-    /* Dark warm theme */
-    --background: 30 15% 8%;
-    --foreground: 30 15% 95%;
+    /* Dark theme - Easy on eyes */
+    --background: 220 15% 12%;
+    --foreground: 220 15% 88%;
 
-    --card: 30 15% 10%;
-    --card-foreground: 30 15% 95%;
+    --card: 220 15% 14%;
+    --card-foreground: 220 15% 88%;
 
-    --popover: 30 15% 10%;
-    --popover-foreground: 30 15% 95%;
+    --popover: 220 15% 14%;
+    --popover-foreground: 220 15% 88%;
 
-    --primary: 180 45% 55%;
-    --primary-foreground: 30 15% 8%;
-    --primary-glow: 180 45% 65%;
+    --primary: 160 25% 58%;
+    --primary-foreground: 220 15% 12%;
+    --primary-glow: 160 25% 68%;
 
-    --secondary: 15 65% 65%;
-    --secondary-foreground: 30 15% 8%;
+    --secondary: 260 20% 68%;
+    --secondary-foreground: 220 15% 12%;
 
-    --muted: 30 15% 15%;
-    --muted-foreground: 30 15% 70%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 15% 65%;
 
-    --accent: 45 85% 65%;
-    --accent-foreground: 30 15% 8%;
+    --accent: 25 35% 70%;
+    --accent-foreground: 220 15% 12%;
 
-    --destructive: 5 75% 65%;
-    --destructive-foreground: 30 15% 8%;
+    --destructive: 10 40% 70%;
+    --destructive-foreground: 220 15% 12%;
 
-    --border: 30 15% 18%;
-    --input: 30 15% 10%;
-    --ring: 180 45% 55%;
+    --border: 220 15% 22%;
+    --input: 220 15% 14%;
+    --ring: 160 25% 58%;
 
-    --success: 120 45% 55%;
-    --success-foreground: 30 15% 8%;
-    --warning: 40 85% 65%;
-    --warning-foreground: 30 15% 8%;
-    --info: 200 65% 65%;
-    --info-foreground: 30 15% 8%;
+    --success: 140 25% 58%;
+    --success-foreground: 220 15% 12%;
+    --warning: 45 35% 70%;
+    --warning-foreground: 220 15% 12%;
+    --info: 200 25% 68%;
+    --info-foreground: 220 15% 12%;
 
-    /* Dark warm gradients */
+    /* Dark gradients - Gentle */
     --gradient-primary: linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-hero: linear-gradient(145deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(30 15% 12%), hsl(30 15% 6%));
+    --gradient-card: linear-gradient(145deg, hsl(220 15% 16%), hsl(220 15% 10%));
     --gradient-button: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
     --gradient-inset: linear-gradient(145deg, hsl(var(--muted)), hsl(var(--card)));
 
-    /* Dark warm shadows */
+    /* Dark shadows - Very soft */
     --shadow-neumorphism: 
-      8px 8px 16px hsl(30 15% 3%),
-      -8px -8px 16px hsl(30 15% 15%);
+      6px 6px 12px hsl(220 15% 6%),
+      -6px -6px 12px hsl(220 15% 20%);
     --shadow-neumorphism-inset: 
-      inset 8px 8px 16px hsl(30 15% 3%),
-      inset -8px -8px 16px hsl(30 15% 15%);
+      inset 6px 6px 12px hsl(220 15% 6%),
+      inset -6px -6px 12px hsl(220 15% 20%);
     --shadow-neumorphism-small: 
-      4px 4px 8px hsl(30 15% 5%),
-      -4px -4px 8px hsl(30 15% 15%);
+      3px 3px 6px hsl(220 15% 8%),
+      -3px -3px 6px hsl(220 15% 20%);
     --shadow-neumorphism-pressed: 
-      inset 4px 4px 8px hsl(30 15% 3%),
-      inset -4px -4px 8px hsl(30 15% 15%);
+      inset 3px 3px 6px hsl(220 15% 6%),
+      inset -3px -3px 6px hsl(220 15% 20%);
     --shadow-hover: 
-      12px 12px 24px hsl(30 15% 1%),
-      -12px -12px 24px hsl(30 15% 15%);
+      8px 8px 16px hsl(220 15% 4%),
+      -8px -8px 16px hsl(220 15% 20%);
 
-    --sidebar-background: 30 15% 6%;
-    --sidebar-foreground: 30 15% 95%;
-    --sidebar-primary: 180 45% 55%;
-    --sidebar-primary-foreground: 30 15% 8%;
-    --sidebar-accent: 30 15% 12%;
-    --sidebar-accent-foreground: 30 15% 95%;
-    --sidebar-border: 30 15% 18%;
-    --sidebar-ring: 180 45% 55%;
+    --sidebar-background: 220 15% 10%;
+    --sidebar-foreground: 220 15% 88%;
+    --sidebar-primary: 160 25% 58%;
+    --sidebar-primary-foreground: 220 15% 12%;
+    --sidebar-accent: 220 15% 16%;
+    --sidebar-accent-foreground: 220 15% 88%;
+    --sidebar-border: 220 15% 22%;
+    --sidebar-ring: 160 25% 58%;
   }
 }
 
