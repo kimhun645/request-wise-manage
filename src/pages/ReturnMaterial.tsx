@@ -11,11 +11,25 @@ const ReturnMaterial = () => {
     >
       <div className="space-y-6">
         <div className="flex gap-3">
-          <Button className="gap-2">
+          <Button 
+            className="gap-2"
+            onClick={() => {
+              alert("เปิดฟอร์มสร้างใบคืนวัสดุใหม่\n(ฟีเจอร์นี้จะให้เลือกรายการเบิกที่ต้องการคืน)");
+            }}
+          >
             <RotateCcw className="w-4 h-4" />
             สร้างใบคืนใหม่
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => {
+              const searchTerm = prompt("ค้นหารายการเบิก (เลขที่ใบเบิก, ชื่อผู้เบิก, หรือแผนก):");
+              if (searchTerm) {
+                alert(`ค้นหา: "${searchTerm}"\n\nพบรายการเบิกที่ตรงกัน:\n• REQ-001 - สมชาย ใจดี\n• REQ-003 - สมศักดิ์ ขยัน\n\n(เลือกรายการเพื่อสร้างใบคืน)`);
+              }
+            }}
+          >
             <Search className="w-4 h-4" />
             ค้นหารายการเบิก
           </Button>

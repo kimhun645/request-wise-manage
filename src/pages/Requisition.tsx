@@ -224,13 +224,40 @@ const Requisition = () => {
                         <TableCell>{req.totalItems} รายการ</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                alert(`รายละเอียดใบเบิก ${req.id}:\n\nผู้เบิก: ${req.requester}\nแผนก: ${req.department}\nวันที่: ${req.date}\nคำอธิบาย: ${req.description}\nจำนวนรายการ: ${req.totalItems} รายการ\nสถานะ: ${req.status}`);
+                              }}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                if (req.status === 'completed') {
+                                  alert("ไม่สามารถแก้ไขใบเบิกที่เสร็จสิ้นแล้ว");
+                                } else {
+                                  alert(`เปิดหน้าแก้ไขใบเบิก ${req.id}`);
+                                }
+                              }}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-destructive">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-destructive"
+                              onClick={() => {
+                                if (req.status === 'completed') {
+                                  alert("ไม่สามารถลบใบเบิกที่เสร็จสิ้นแล้ว");
+                                } else if (confirm(`คุณต้องการลบใบเบิก ${req.id} หรือไม่?`)) {
+                                  alert("ลบใบเบิกเรียบร้อยแล้ว");
+                                }
+                              }}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -483,9 +510,24 @@ const Requisition = () => {
                       ))}
                       <Separator />
                       <div className="flex gap-3 pt-4">
-                        <Button className="flex-1">
-                          บันทึกใบเบิก
-                        </Button>
+                      <Button 
+                        className="w-full"
+                        onClick={() => {
+                          if (selectedMaterials.length === 0) {
+                            alert("กรุณาเลือกวัสดุที่ต้องการเบิก");
+                            return;
+                          }
+                          const total = selectedMaterials.reduce((sum, item) => sum + item.quantity, 0);
+                          const summary = selectedMaterials.map(item => `• ${item.name}: ${item.quantity} ${item.unit}`).join('\n');
+                          
+                          if (confirm(`ยืนยันการบันทึกใบเบิก?\n\nรายการ (${total} รายการ):\n${summary}\n\nคลิก OK เพื่อบันทึก`)) {
+                            alert("บันทึกใบเบิกเรียบร้อยแล้ว\nเลขที่ใบเบิก: REQ-" + String(Math.floor(Math.random() * 1000) + 100).padStart(3, '0'));
+                            setSelectedMaterials([]);
+                          }
+                        }}
+                      >
+                        บันทึกใบเบิก
+                      </Button>
                         <Button variant="outline" onClick={() => setSelectedMaterials([])}>
                           ล้างรายการ
                         </Button>

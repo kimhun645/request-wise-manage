@@ -26,7 +26,12 @@ const ScanBarcode = () => {
                   <p className="text-muted-foreground">กดเพื่อเปิดกล้อง</p>
                 </div>
               </div>
-              <Button className="w-full gap-2">
+              <Button 
+                className="w-full gap-2"
+                onClick={() => {
+                  alert("เปิดกล้องสแกนบาร์โค้ด\n(ในระบบจริงจะเปิดกล้องเพื่อสแกน)\n\nผลลัพธ์ตัวอย่าง:\n• พบวัสดุ: กระดาษ A4\n• จำนวนคงเหลือ: 50 รีม\n• Barcode: 8850999320101");
+                }}
+              >
                 <Camera className="w-4 h-4" />
                 เริ่มสแกน
               </Button>
@@ -49,7 +54,22 @@ const ScanBarcode = () => {
                   <p className="text-sm text-muted-foreground">หรือคลิกเพื่อเลือกไฟล์</p>
                 </div>
               </div>
-              <Button variant="outline" className="w-full gap-2">
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e: any) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      alert(`อัปโหลดไฟล์: ${file.name}\n\n(ในระบบจริงจะประมวลผลภาพเพื่อหาบาร์โค้ด)\n\nผลลัพธ์ตัวอย่าง:\n• พบบาร์โค้ด: 8850999320102\n• วัสดุ: ปากกาลูกลื่น\n• สต็อกคงเหลือ: 200 ด้าม`);
+                    }
+                  };
+                  input.click();
+                }}
+              >
                 <Upload className="w-4 h-4" />
                 เลือกไฟล์
               </Button>

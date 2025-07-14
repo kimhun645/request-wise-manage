@@ -159,7 +159,21 @@ const ReceiveMaterial = () => {
                   <Label htmlFor="receive-date">วันที่รับ</Label>
                   <Input id="receive-date" type="date" />
                 </div>
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={() => {
+                    const supplier = (document.getElementById('supplier') as HTMLInputElement)?.value;
+                    const invoice = (document.getElementById('invoice') as HTMLInputElement)?.value;
+                    const date = (document.getElementById('receive-date') as HTMLInputElement)?.value;
+                    
+                    if (!supplier || !invoice || !date) {
+                      alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                      return;
+                    }
+                    
+                    alert(`เริ่มบันทึกการรับเข้าวัสดุ\n\nผู้จัดส่ง: ${supplier}\nเลขที่ใบส่ง: ${invoice}\nวันที่รับ: ${date}\n\nสามารถเริ่มสแกนหรือเพิ่มรายการได้`);
+                  }}
+                >
                   เริ่มบันทึกรายการ
                 </Button>
               </CardContent>
@@ -404,7 +418,22 @@ const ReceiveMaterial = () => {
                         <Input id="invoice-scan" placeholder="INV-000001" />
                       </div>
                       <div className="flex gap-3">
-                        <Button className="flex-1">
+                        <Button 
+                          className="w-full"
+                          onClick={() => {
+                            if (receivedItems.length === 0) {
+                              alert("กรุณาสแกนหรือเพิ่มรายการวัสดุที่รับเข้า");
+                              return;
+                            }
+                            
+                            const summary = receivedItems.map(item => `• ${item.name}: ${item.quantity} ${item.unit}`).join('\n');
+                            
+                            if (confirm(`ยืนยันการบันทึกรับเข้าวัสดุ?\n\nรายการ (${receivedItems.length} รายการ):\n${summary}\n\nคลิก OK เพื่อบันทึก`)) {
+                              alert("บันทึกการรับเข้าเรียบร้อยแล้ว\nเลขที่รับเข้า: RCV-" + String(Math.floor(Math.random() * 1000) + 100).padStart(3, '0'));
+                              setReceivedItems([]);
+                            }
+                          }}
+                        >
                           บันทึกการรับเข้า
                         </Button>
                         <Button variant="outline" onClick={() => setReceivedItems([])}>

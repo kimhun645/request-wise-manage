@@ -35,7 +35,14 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
               
               <div className="flex items-center gap-3">
                 {/* Notifications */}
-                <Button variant="ghost" size="sm" className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="relative"
+                  onClick={() => {
+                    alert("การแจ้งเตือน:\n• สต็อกวัสดุต่ำ: กระดาษ A4\n• ใบเบิกรออนุมัติ: 2 ใบ\n• วัสดุใกล้หมดอายุ: 1 รายการ");
+                  }}
+                >
                   <Bell className="w-5 h-5" />
                   <Badge 
                     variant="destructive" 
@@ -46,7 +53,19 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                 </Button>
                 
                 {/* User Profile */}
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
+                    const options = confirm("เลือกการดำเนินการ:\nOK = แก้ไขโปรไฟล์\nCancel = ดูข้อมูล");
+                    if (options === true) {
+                      alert("เปิดหน้าแก้ไขโปรไฟล์");
+                    } else {
+                      alert("ข้อมูลผู้ใช้:\nชื่อ: ผู้ดูแลระบบ\nอีเมล: admin@company.com\nแผนก: IT\nบทบาท: ผู้ดูแลระบบ");
+                    }
+                  }}
+                >
                   <User className="w-5 h-5" />
                   <span className="hidden md:inline">แอดมิน</span>
                 </Button>

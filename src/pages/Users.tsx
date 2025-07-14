@@ -292,12 +292,35 @@ const Users = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2">
-                      <Button className="flex-1">บันทึก</Button>
-                      <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
-                        ยกเลิก
-                      </Button>
-                    </div>
+                     <div className="flex gap-2">
+                       <Button 
+                         className="flex-1"
+                         onClick={() => {
+                           const name = (document.getElementById('user-name') as HTMLInputElement)?.value;
+                           const email = (document.getElementById('user-email') as HTMLInputElement)?.value;
+                           const phone = (document.getElementById('user-phone') as HTMLInputElement)?.value;
+                           const department = (document.getElementById('user-department') as HTMLInputElement)?.value;
+                           
+                           if (!name || !email || !phone || !department) {
+                             alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                             return;
+                           }
+                           
+                           if (!email.includes('@')) {
+                             alert("กรุณากรอกอีเมลที่ถูกต้อง");
+                             return;
+                           }
+                           
+                           alert(`เพิ่มผู้ใช้งานใหม่เรียบร้อยแล้ว\n\nชื่อ: ${name}\nอีเมล: ${email}\nแผนก: ${department}\n\nรหัส: USR-${String(Math.floor(Math.random() * 1000) + 100).padStart(3, '0')}\nรหัสผ่านเริ่มต้น: 123456`);
+                           setIsAddUserOpen(false);
+                         }}
+                       >
+                         บันทึก
+                       </Button>
+                       <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                         ยกเลิก
+                       </Button>
+                     </div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -347,23 +370,58 @@ const Users = () => {
                       {user.lastLogin}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        {user.status === 'active' ? (
-                          <Button variant="ghost" size="sm" className="text-warning">
-                            <UserX className="w-4 h-4" />
-                          </Button>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="text-success">
-                            <UserCheck className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" className="text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                       <div className="flex gap-2">
+                         <Button 
+                           variant="ghost" 
+                           size="sm"
+                           onClick={() => {
+                             alert(`แก้ไขข้อมูลผู้ใช้: ${user.name}\n(เปิดฟอร์มแก้ไขข้อมูลผู้ใช้)`);
+                           }}
+                         >
+                           <Edit className="w-4 h-4" />
+                         </Button>
+                         {user.status === 'active' ? (
+                           <Button 
+                             variant="ghost" 
+                             size="sm" 
+                             className="text-warning"
+                             onClick={() => {
+                               if (confirm(`คุณต้องการปิดการใช้งานของ ${user.name} หรือไม่?`)) {
+                                 alert(`ปิดการใช้งานของ ${user.name} เรียบร้อยแล้ว`);
+                               }
+                             }}
+                           >
+                             <UserX className="w-4 h-4" />
+                           </Button>
+                         ) : (
+                           <Button 
+                             variant="ghost" 
+                             size="sm" 
+                             className="text-success"
+                             onClick={() => {
+                               if (confirm(`คุณต้องการเปิดการใช้งานของ ${user.name} หรือไม่?`)) {
+                                 alert(`เปิดการใช้งานของ ${user.name} เรียบร้อยแล้ว`);
+                               }
+                             }}
+                           >
+                             <UserCheck className="w-4 h-4" />
+                           </Button>
+                         )}
+                         <Button 
+                           variant="ghost" 
+                           size="sm" 
+                           className="text-destructive"
+                           onClick={() => {
+                             if (user.role === 'admin') {
+                               alert("ไม่สามารถลบผู้ดูแลระบบได้");
+                             } else if (confirm(`คุณต้องการลบผู้ใช้ ${user.name} หรือไม่?\n\nการลบจะไม่สามารถยกเลิกได้!`)) {
+                               alert(`ลบผู้ใช้ ${user.name} เรียบร้อยแล้ว`);
+                             }
+                           }}
+                         >
+                           <Trash2 className="w-4 h-4" />
+                         </Button>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))}

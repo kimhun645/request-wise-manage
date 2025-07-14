@@ -172,7 +172,15 @@ const History = () => {
                 </SelectContent>
               </Select>
 
-              <Button variant="outline" className="gap-2">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => {
+                  const count = filteredHistory.length;
+                  const totalValue = filteredHistory.reduce((sum, h) => sum + h.totalValue, 0);
+                  alert(`กำลังสร้างไฟล์ Excel...\n\nรายการประวัติการเบิก:\n• จำนวนรายการ: ${count} รายการ\n• มูลค่ารวม: ฿${totalValue.toLocaleString()}\n• ช่วงวันที่: ${filteredHistory[filteredHistory.length-1]?.date} - ${filteredHistory[0]?.date}\n\nไฟล์: ประวัติการเบิก_${new Date().toISOString().slice(0,10)}.xlsx\n\n(กำลังดาวน์โหลด...)`);
+                }}
+              >
                 <Download className="w-4 h-4" />
                 Export Excel
               </Button>
@@ -279,7 +287,15 @@ const History = () => {
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>{record.approver}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" className="gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-1"
+                        onClick={() => {
+                          const details = `รายละเอียดใบเบิก ${record.id}\n\n• ผู้เบิก: ${record.requester}\n• แผนก: ${record.department}\n• วันที่: ${record.date}\n• สถานะ: ${record.status}\n• ผู้อนุมัติ: ${record.approver}\n• มูลค่า: ฿${record.totalValue.toLocaleString()}\n\nรายการวัสดุ:\n${record.items.map(item => `• ${item.name}: ${item.quantity} ${item.unit}`).join('\n')}`;
+                          alert(details);
+                        }}
+                      >
                         <Eye className="w-4 h-4" />
                         ดู
                       </Button>

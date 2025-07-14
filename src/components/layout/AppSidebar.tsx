@@ -162,6 +162,13 @@ export function AppSidebar() {
             variant="outline" 
             size="sm" 
             className="w-full justify-start neumorph-button hover:shadow-neumorph-hover text-sidebar-foreground"
+            onClick={() => {
+              if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+                alert("ออกจากระบบเรียบร้อยแล้ว");
+                // In real app: navigate to login page
+                window.location.reload();
+              }
+            }}
           >
             <LogOut className="w-4 h-4 mr-2" />
             ออกจากระบบ

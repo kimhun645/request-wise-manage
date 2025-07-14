@@ -538,16 +538,36 @@ const Materials = () => {
                               )}
                             </TableCell>
                             <TableCell className="font-mono text-xs">{material.barcode}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button variant="ghost" size="sm">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="text-destructive">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            alert(`แก้ไขวัสดุ: ${material.name}\n(ฟีเจอร์นี้จะเปิดฟอร์มแก้ไข)`);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive"
+                          onClick={() => {
+                            if (material.stock > 0) {
+                              alert("ไม่สามารถลบวัสดุที่มีสต็อกคงเหลือ");
+                            } else if (confirm(`คุณต้องการลบวัสดุ "${material.name}" หรือไม่?`)) {
+                              toast({
+                                title: "สำเร็จ",
+                                description: `ลบวัสดุ "${material.name}" เรียบร้อยแล้ว`,
+                              });
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                           </TableRow>
                         );
                       })}
