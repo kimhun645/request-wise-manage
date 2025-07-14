@@ -9,7 +9,6 @@ import {
   Truck,
   ClipboardList,
   Users,
-  AlertTriangle,
   ScanLine
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -40,7 +39,6 @@ const managementItems = [
   { title: "จัดการวัสดุ", url: "/materials", icon: Package },
   { title: "รายงาน", url: "/reports", icon: FileText },
   { title: "ประวัติการเบิก", url: "/history", icon: ClipboardList },
-  { title: "อนุมัติรายการ", url: "/approvals", icon: AlertTriangle },
 ];
 
 const systemItems = [

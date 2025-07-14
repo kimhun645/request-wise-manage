@@ -11,7 +11,7 @@ import ReturnMaterial from "./pages/ReturnMaterial";
 import Reports from "./pages/Reports";
 import History from "./pages/History";
 import Materials from "./pages/Materials";
-import Approvals from "./pages/Approvals";
+
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
@@ -32,7 +32,7 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/history" element={<History />} />
           <Route path="/materials" element={<Materials />} />
-          <Route path="/approvals" element={<Approvals />} />
+          
           <Route path="/users" element={<Users />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
