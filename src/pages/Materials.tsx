@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { format, isAfter, isBefore, addDays, parseISO } from "date-fns";
-import { th } from "date-fns/locale";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,10 +18,7 @@ import {
   BarChart3,
   AlertTriangle,
   TrendingDown,
-  TrendingUp,
-  Calendar,
-  Clock,
-  AlertCircle
+  TrendingUp
 } from "lucide-react";
 import {
   Table,
@@ -40,620 +35,431 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Mock data วัสดุ
-const mockMaterials = [
-  {
-    id: "MAT-001",
-    name: "กระดาษ A4",
-    category: "เครื่องเขียน",
-    stock: 50,
-    minStock: 20,
-    maxStock: 100,
-    unit: "รีม",
-    price: 90,
-    barcode: "8850999320101",
-    supplier: "บริษัท ABC จำกัด",
-    lastReceived: "2024-01-10",
-    expiryDate: null
-  },
-  {
-    id: "MAT-002", 
-    name: "ปากกาลูกลื่น",
-    category: "เครื่องเขียน",
-    stock: 200,
-    minStock: 50,
-    maxStock: 300,
-    unit: "ด้าม",
-    price: 15,
-    barcode: "8850999320102",
-    supplier: "บริษัท XYZ จำกัด",
-    lastReceived: "2024-01-08",
-    expiryDate: null
-  },
-  {
-    id: "MAT-003",
-    name: "แฟ้ม",
-    category: "เครื่องเขียน", 
-    stock: 15,
-    minStock: 30,
-    maxStock: 80,
-    unit: "เล่ม",
-    price: 25,
-    barcode: "8850999320103",
-    supplier: "บริษัท ABC จำกัด",
-    lastReceived: "2024-01-05",
-    expiryDate: null
-  },
-  {
-    id: "MAT-004",
-    name: "เมาส์ไร้สาย",
-    category: "อุปกรณ์ IT",
-    stock: 8,
-    minStock: 10,
-    maxStock: 25,
-    unit: "ชิ้น",
-    price: 450,
-    barcode: "8850999320104",
-    supplier: "บริษัท Tech จำกัด",
-    lastReceived: "2024-01-03",
-    expiryDate: null
-  },
-  {
-    id: "MAT-005",
-    name: "พาราเซตามอล 500mg",
-    category: "ยา",
-    stock: 100,
-    minStock: 50,
-    maxStock: 200,
-    unit: "เม็ด",
-    price: 2,
-    barcode: "8850999320105",
-    supplier: "โรงพยาบาลรัฐ",
-    lastReceived: "2024-01-01",
-    expiryDate: "2024-12-31"
-  },
-  {
-    id: "MAT-006",
-    name: "แอลกอฮอล์ 70%",
-    category: "ยา",
-    stock: 25,
-    minStock: 20,
-    maxStock: 50,
-    unit: "ขวด",
-    price: 35,
-    barcode: "8850999320106",
-    supplier: "บริษัท เมดิคอล จำกัด",
-    lastReceived: "2024-01-15",
-    expiryDate: "2025-01-20"
-  }
-];
-
-const initialCategories = [
-  { id: "CAT-001", name: "เครื่องเขียน", itemCount: 145 },
-  { id: "CAT-002", name: "อุปกรณ์ IT", itemCount: 32 },
-  { id: "CAT-003", name: "วัสดุทำความสะอาด", itemCount: 28 },
-  { id: "CAT-004", name: "อุปกรณ์สำนักงาน", itemCount: 67 },
-  { id: "CAT-005", name: "ยา", itemCount: 15 }
-];
+import { useMaterials, Material } from "@/hooks/useMaterials";
 
 const Materials = () => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"materials" | "categories">("materials");
+  const { materials, categories, loading, createMaterial, updateMaterial, deleteMaterial } = useMaterials();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [categories, setCategories] = useState(initialCategories);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [newMaterial, setNewMaterial] = useState({
+    code: "",
+    name: "",
+    category_id: "",
+    stock: 0,
+    min_stock: 0,
+    max_stock: 0,
+    unit: "",
+    price: 0,
+    barcode: "",
+    supplier: ""
+  });
+  const { toast } = useToast();
 
-  const getExpiryStatus = (expiryDate: string | null) => {
-    if (!expiryDate) return null;
-    
-    const expiry = parseISO(expiryDate);
-    const today = new Date();
-    const warningDate = addDays(today, 30); // แจ้งเตือนก่อนหมดอายุ 30 วัน
-    const criticalDate = addDays(today, 7); // วิกฤติก่อนหมดอายุ 7 วัน
-    
-    if (isBefore(expiry, today)) {
-      return { label: "หมดอายุแล้ว", variant: "destructive" as const, icon: AlertCircle };
-    } else if (isBefore(expiry, criticalDate)) {
-      return { label: "ใกล้หมดอายุ", variant: "destructive" as const, icon: Clock };
-    } else if (isBefore(expiry, warningDate)) {
-      return { label: "เตือนหมดอายุ", variant: "secondary" as const, icon: Calendar };
-    } else {
-      return { label: "ปกติ", variant: "default" as const, icon: Calendar };
-    }
-  };
-
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
-      toast({
-        title: "ข้อผิดพลาด",
-        description: "กรุณากรอกชื่อหมวดหมู่",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if category already exists
-    if (categories.some(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase())) {
-      toast({
-        title: "ข้อผิดพลาด", 
-        description: "หมวดหมู่นี้มีอยู่แล้ว",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Generate new ID
-    const newId = `CAT-${String(categories.length + 1).padStart(3, '0')}`;
-    
-    // Add new category
-    const newCategory = {
-      id: newId,
-      name: newCategoryName.trim(),
-      itemCount: 0
-    };
-
-    setCategories([...categories, newCategory]);
-    setNewCategoryName("");
-    setIsAddCategoryOpen(false);
-    
-    toast({
-      title: "สำเร็จ",
-      description: `เพิ่มหมวดหมู่ "${newCategoryName}" เรียบร้อยแล้ว`,
-    });
-  };
-
-  const handleDeleteCategory = (categoryId: string) => {
-    const categoryToDelete = categories.find(cat => cat.id === categoryId);
-    if (categoryToDelete && categoryToDelete.itemCount > 0) {
-      toast({
-        title: "ไม่สามารถลบได้",
-        description: "ไม่สามารถลบหมวดหมู่ที่มีสินค้าอยู่",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCategories(categories.filter(cat => cat.id !== categoryId));
-    toast({
-      title: "สำเร็จ",
-      description: "ลบหมวดหมู่เรียบร้อยแล้ว",
-    });
-  };
-
-  const getStockStatus = (current: number, min: number) => {
-    if (current <= min) {
-      return { label: "สต็อกต่ำ", variant: "destructive" as const, icon: AlertTriangle };
-    } else if (current <= min * 1.5) {
-      return { label: "ใกล้หมด", variant: "secondary" as const, icon: TrendingDown };
-    } else {
-      return { label: "ปกติ", variant: "default" as const, icon: TrendingUp };
-    }
-  };
-
-  const filteredMaterials = mockMaterials.filter(material => {
+  const filteredMaterials = materials.filter(material => {
     const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         material.barcode.includes(searchTerm) ||
-                         material.id.toLowerCase().includes(searchTerm.toLowerCase());
+                         material.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || material.category_id === categoryFilter;
+    const matchesStock = stockFilter === "all" ||
+                        (stockFilter === "low" && material.stock <= material.min_stock) ||
+                        (stockFilter === "normal" && material.stock > material.min_stock && material.stock < material.max_stock) ||
+                        (stockFilter === "high" && material.stock >= material.max_stock);
     
-    const matchesCategory = categoryFilter === "all" || material.category === categoryFilter;
-    
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesStock;
   });
 
-  const lowStockItems = mockMaterials.filter(m => m.stock <= m.minStock);
-  const expiringItems = mockMaterials.filter(m => {
-    if (!m.expiryDate) return false;
-    const expiry = parseISO(m.expiryDate);
-    const warningDate = addDays(new Date(), 30);
-    return isBefore(expiry, warningDate);
-  });
+  const getStockStatus = (material: Material) => {
+    if (material.stock <= material.min_stock) {
+      return { status: "low", color: "destructive", icon: AlertTriangle };
+    } else if (material.stock >= material.max_stock) {
+      return { status: "high", color: "secondary", icon: TrendingUp };
+    } else {
+      return { status: "normal", color: "default", icon: TrendingDown };
+    }
+  };
 
-  // Show expiry alerts
-  useEffect(() => {
-    expiringItems.forEach(item => {
-      const expiryStatus = getExpiryStatus(item.expiryDate);
-      if (expiryStatus && (expiryStatus.label === "หมดอายุแล้ว" || expiryStatus.label === "ใกล้หมดอายุ")) {
-        toast({
-          title: `${item.name} - ${expiryStatus.label}`,
-          description: `วันหมดอายุ: ${format(parseISO(item.expiryDate!), 'dd MMM yyyy', { locale: th })}`,
-          variant: "destructive",
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingMaterial) {
+        await updateMaterial(editingMaterial.id, newMaterial);
+        setEditingMaterial(null);
+      } else {
+        await createMaterial({
+          ...newMaterial,
+          code: newMaterial.code || `MAT-${Date.now()}`
         });
       }
+      setNewMaterial({
+        code: "",
+        name: "",
+        category_id: "",
+        stock: 0,
+        min_stock: 0,
+        max_stock: 0,
+        unit: "",
+        price: 0,
+        barcode: "",
+        supplier: ""
+      });
+      setIsAddMaterialOpen(false);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleEdit = (material: Material) => {
+    setEditingMaterial(material);
+    setNewMaterial({
+      code: material.code,
+      name: material.name,
+      category_id: material.category_id,
+      stock: material.stock,
+      min_stock: material.min_stock,
+      max_stock: material.max_stock,
+      unit: material.unit,
+      price: material.price,
+      barcode: material.barcode || "",
+      supplier: material.supplier || ""
     });
-  }, []);
+    setIsAddMaterialOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("คุณแน่ใจหรือไม่ที่จะลบวัสดุนี้?")) {
+      await deleteMaterial(id);
+    }
+  };
+
+  const lowStockCount = materials.filter(m => m.stock <= m.min_stock).length;
+  const totalValue = materials.reduce((sum, m) => sum + (m.stock * m.price), 0);
 
   return (
-    <DashboardLayout 
-      title="จัดการวัสดุ" 
-      subtitle="จัดการวัสดุและหมวดหมู่ในระบบ"
-    >
-      <div className="space-y-6">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{mockMaterials.length}</p>
-                  <p className="text-sm text-muted-foreground">วัสดุทั้งหมด</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{lowStockItems.length}</p>
-                  <p className="text-sm text-muted-foreground">สต็อกต่ำ</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{expiringItems.length}</p>
-                  <p className="text-sm text-muted-foreground">ใกล้หมดอายุ</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                  <Tag className="w-5 h-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{categories.length}</p>
-                  <p className="text-sm text-muted-foreground">หมวดหมู่</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    ฿{mockMaterials.reduce((sum, m) => sum + (m.stock * m.price), 0).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">มูลค่าสต็อก</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex gap-4">
-          <Button 
-            variant={activeTab === "materials" ? "default" : "outline"}
-            onClick={() => setActiveTab("materials")}
-            className="gap-2"
-          >
-            <Package className="w-4 h-4" />
-            จัดการวัสดุ
-          </Button>
-          <Button 
-            variant={activeTab === "categories" ? "default" : "outline"}
-            onClick={() => setActiveTab("categories")}
-            className="gap-2"
-          >
-            <Tag className="w-4 h-4" />
-            จัดการหมวดหมู่
-          </Button>
-        </div>
-
-        {activeTab === "materials" && (
-          <div className="space-y-6">
-            {/* Search and Actions */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                  <div className="flex gap-3 flex-1">
+    <DashboardLayout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">จัดการวัสดุ</h1>
+            <p className="text-muted-foreground">จัดการข้อมูลวัสดุและคลังสินค้า</p>
+          </div>
+          <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingMaterial(null);
+                setNewMaterial({
+                  code: "",
+                  name: "",
+                  category_id: "",
+                  stock: 0,
+                  min_stock: 0,
+                  max_stock: 0,
+                  unit: "",
+                  price: 0,
+                  barcode: "",
+                  supplier: ""
+                });
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                เพิ่มวัสดุ
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>{editingMaterial ? "แก้ไขวัสดุ" : "เพิ่มวัสดุใหม่"}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="code">รหัสวัสดุ</Label>
                     <Input
-                      placeholder="ค้นหาวัสดุ, Barcode, รหัส..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-sm"
+                      id="code"
+                      value={newMaterial.code}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, code: e.target.value }))}
+                      placeholder="เช่น MAT-001"
                     />
-                    
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="หมวดหมู่" />
+                  </div>
+                  <div>
+                    <Label htmlFor="name">ชื่อวัสดุ</Label>
+                    <Input
+                      id="name"
+                      value={newMaterial.name}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="ชื่อวัสดุ"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">หมวดหมู่</Label>
+                    <Select value={newMaterial.category_id} onValueChange={(value) => setNewMaterial(prev => ({ ...prev, category_id: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="เลือกหมวดหมู่" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
-                        <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
-                        <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
-                        <SelectItem value="ยา">ยา</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        เพิ่มวัสดุใหม่
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>เพิ่มวัสดุใหม่</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="material-name">ชื่อวัสดุ</Label>
-                          <Input id="material-name" placeholder="ชื่อวัสดุ" />
-                        </div>
-                        <div>
-                          <Label htmlFor="material-category">หมวดหมู่</Label>
-                          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="เลือกหมวดหมู่" />
-                            </SelectTrigger>
-                            <SelectContent>
-                        <SelectItem value="เครื่องเขียน">เครื่องเขียน</SelectItem>
-                        <SelectItem value="อุปกรณ์ IT">อุปกรณ์ IT</SelectItem>
-                        <SelectItem value="วัสดุทำความสะอาด">วัสดุทำความสะอาด</SelectItem>
-                        <SelectItem value="ยา">ยา</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div>
+                    <Label htmlFor="unit">หน่วยนับ</Label>
+                    <Input
+                      id="unit"
+                      value={newMaterial.unit}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, unit: e.target.value }))}
+                      placeholder="เช่น ชิ้น, กล่อง"
+                      required
+                    />
                   </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="material-unit">หน่วย</Label>
-                            <Input id="material-unit" placeholder="ชิ้น, กล่อง, รีม" />
-                          </div>
-                          <div>
-                            <Label htmlFor="material-price">ราคา</Label>
-                            <Input id="material-price" type="number" placeholder="0.00" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="min-stock">สต็อกขั้นต่ำ</Label>
-                            <Input id="min-stock" type="number" placeholder="0" />
-                          </div>
-                          <div>
-                            <Label htmlFor="max-stock">สต็อกสูงสุด</Label>
-                            <Input id="max-stock" type="number" placeholder="0" />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="barcode">Barcode</Label>
-                          <Input id="barcode" placeholder="8850999320101" />
-                        </div>
-                        
-                        {/* วันหมดอายุสำหรับยาเท่านั้น */}
-                        {selectedCategory === "ยา" && (
-                          <div>
-                            <Label htmlFor="expiry-date">วันหมดอายุ</Label>
-                            <Input id="expiry-date" type="date" />
-                          </div>
-                        )}
-                        
-                        <div className="flex gap-2">
-                          <Button className="flex-1">บันทึก</Button>
-                          <Button variant="outline" onClick={() => {
-                            setIsAddMaterialOpen(false);
-                            setSelectedCategory("");
-                          }}>
-                            ยกเลิก
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Materials Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>รายการวัสดุ ({filteredMaterials.length} รายการ)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>รหัส</TableHead>
-                        <TableHead>ชื่อวัสดุ</TableHead>
-                        <TableHead>หมวดหมู่</TableHead>
-                        <TableHead>สต็อก</TableHead>
-                        <TableHead>หน่วย</TableHead>
-                        <TableHead>ราคา</TableHead>
-                        <TableHead>สถานะ</TableHead>
-                        <TableHead>วันหมดอายุ</TableHead>
-                        <TableHead>Barcode</TableHead>
-                        <TableHead>การดำเนินการ</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredMaterials.map((material) => {
-                        const stockStatus = getStockStatus(material.stock, material.minStock);
-                        const expiryStatus = getExpiryStatus(material.expiryDate);
-                        const StockIcon = stockStatus.icon;
-                        const ExpiryIcon = expiryStatus?.icon;
-                        
-                        return (
-                          <TableRow key={material.id}>
-                            <TableCell className="font-medium">{material.id}</TableCell>
-                            <TableCell>{material.name}</TableCell>
-                            <TableCell>{material.category}</TableCell>
-                            <TableCell>
-                              <span className={material.stock <= material.minStock ? "text-destructive font-medium" : ""}>
-                                {material.stock}/{material.maxStock}
-                              </span>
-                            </TableCell>
-                            <TableCell>{material.unit}</TableCell>
-                            <TableCell>฿{material.price}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col gap-1">
-                                <Badge variant={stockStatus.variant} className="gap-1">
-                                  <StockIcon className="w-3 h-3" />
-                                  {stockStatus.label}
-                                </Badge>
-                                {expiryStatus && (
-                                  <Badge variant={expiryStatus.variant} className="gap-1">
-                                    <ExpiryIcon className="w-3 h-3" />
-                                    {expiryStatus.label}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {material.expiryDate ? (
-                                <span className={expiryStatus?.variant === "destructive" ? "text-destructive font-medium" : ""}>
-                                  {format(parseISO(material.expiryDate), 'dd/MM/yyyy')}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="font-mono text-xs">{material.barcode}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            alert(`แก้ไขวัสดุ: ${material.name}\n(ฟีเจอร์นี้จะเปิดฟอร์มแก้ไข)`);
-                          }}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-destructive"
-                          onClick={() => {
-                            if (material.stock > 0) {
-                              alert("ไม่สามารถลบวัสดุที่มีสต็อกคงเหลือ");
-                            } else if (confirm(`คุณต้องการลบวัสดุ "${material.name}" หรือไม่?`)) {
-                              toast({
-                                title: "สำเร็จ",
-                                description: `ลบวัสดุ "${material.name}" เรียบร้อยแล้ว`,
-                              });
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {activeTab === "categories" && (
-          <div className="space-y-6">
-            {/* Add Category */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">จัดการหมวดหมู่</h3>
-                  <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        เพิ่มหมวดหมู่ใหม่
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>เพิ่มหมวดหมู่ใหม่</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="category-name">ชื่อหมวดหมู่</Label>
-                          <Input 
-                            id="category-name" 
-                            placeholder="ชื่อหมวดหมู่" 
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={handleAddCategory} className="flex-1">บันทึก</Button>
-                          <Button variant="outline" onClick={() => {
-                            setIsAddCategoryOpen(false);
-                            setNewCategoryName("");
-                          }}>
-                            ยกเลิก
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="stock">จำนวนคงเหลือ</Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      value={newMaterial.stock}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="min_stock">จำนวนขั้นต่ำ</Label>
+                    <Input
+                      id="min_stock"
+                      type="number"
+                      value={newMaterial.min_stock}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, min_stock: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="max_stock">จำนวนสูงสุด</Label>
+                    <Input
+                      id="max_stock"
+                      type="number"
+                      value={newMaterial.max_stock}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, max_stock: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                    />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="price">ราคาต่อหน่วย</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={newMaterial.price}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="barcode">บาร์โค้ด</Label>
+                    <Input
+                      id="barcode"
+                      value={newMaterial.barcode}
+                      onChange={(e) => setNewMaterial(prev => ({ ...prev, barcode: e.target.value }))}
+                      placeholder="บาร์โค้ด (ถ้ามี)"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="supplier">ผู้จำหน่าย</Label>
+                  <Input
+                    id="supplier"
+                    value={newMaterial.supplier}
+                    onChange={(e) => setNewMaterial(prev => ({ ...prev, supplier: e.target.value }))}
+                    placeholder="ชื่อผู้จำหน่าย"
+                  />
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit">{editingMaterial ? "อัปเดต" : "บันทึก"}</Button>
+                  <Button type="button" variant="outline" onClick={() => setIsAddMaterialOpen(false)}>
+                    ยกเลิก
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-            {/* Categories Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <Card key={category.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium">{category.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {category.itemCount} รายการ
-                        </p>
-                      </div>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-destructive"
-                            onClick={() => handleDeleteCategory(category.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+        {/* สถิติสรุป */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Package className="h-8 w-8 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">วัสดุทั้งหมด</p>
+                  <p className="text-2xl font-bold">{materials.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+                <div>
+                  <p className="text-sm text-muted-foreground">สต็อกต่ำ</p>
+                  <p className="text-2xl font-bold text-destructive">{lowStockCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Tag className="h-8 w-8 text-success" />
+                <div>
+                  <p className="text-sm text-muted-foreground">หมวดหมู่</p>
+                  <p className="text-2xl font-bold">{categories.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="h-8 w-8 text-accent" />
+                <div>
+                  <p className="text-sm text-muted-foreground">มูลค่ารวม</p>
+                  <p className="text-2xl font-bold">฿{totalValue.toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ตัวกรองและค้นหา */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="ค้นหาวัสดุ..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="หมวดหมู่" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={stockFilter} onValueChange={setStockFilter}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="สต็อก" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกสถานะ</SelectItem>
+                    <SelectItem value="low">สต็อกต่ำ</SelectItem>
+                    <SelectItem value="normal">สต็อกปกติ</SelectItem>
+                    <SelectItem value="high">สต็อกสูง</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        )}
+          </CardContent>
+        </Card>
+
+        {/* ตารางวัสดุ */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              รายการวัสดุ
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">กำลังโหลด...</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>รหัส</TableHead>
+                    <TableHead>ชื่อวัสดุ</TableHead>
+                    <TableHead>หมวดหมู่</TableHead>
+                    <TableHead>จำนวนคงเหลือ</TableHead>
+                    <TableHead>สถานะสต็อก</TableHead>
+                    <TableHead>ราคา/หน่วย</TableHead>
+                    <TableHead>ผู้จำหน่าย</TableHead>
+                    <TableHead>การจัดการ</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredMaterials.map((material) => {
+                    const stockStatus = getStockStatus(material);
+                    const StatusIcon = stockStatus.icon;
+                    
+                    return (
+                      <TableRow key={material.id}>
+                        <TableCell className="font-medium">{material.code}</TableCell>
+                        <TableCell>{material.name}</TableCell>
+                        <TableCell>{material.category?.name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>{material.stock} {material.unit}</span>
+                            <StatusIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={stockStatus.color as any}>
+                            {stockStatus.status === 'low' ? 'สต็อกต่ำ' : 
+                             stockStatus.status === 'high' ? 'สต็อกสูง' : 'ปกติ'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>฿{material.price.toLocaleString()}</TableCell>
+                        <TableCell>{material.supplier || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEdit(material)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDelete(material.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
       <Toaster />
     </DashboardLayout>
