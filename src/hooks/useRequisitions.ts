@@ -65,7 +65,7 @@ export const useRequisitions = () => {
   };
 
   const createRequisition = async (
-    requisitionData: Omit<Requisition, 'id' | 'created_at' | 'updated_at'>,
+    requisitionData: Omit<Requisition, 'id' | 'code' | 'total_items' | 'created_at' | 'updated_at'>,
     items: Omit<RequisitionItem, 'id' | 'requisition_id'>[]
   ) => {
     try {
