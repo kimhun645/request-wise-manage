@@ -48,6 +48,8 @@ const Requisition = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string>("");
   const [scannedMaterial, setScannedMaterial] = useState<any>(null);
+  const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [requisitionForm, setRequisitionForm] = useState({
     requester_name: "",
     department: "",
@@ -151,6 +153,11 @@ const Requisition = () => {
     }
   };
 
+  const handleViewRequisition = (requisition: any) => {
+    setSelectedRequisition(requisition);
+    setIsViewDialogOpen(true);
+  };
+
   return (
     <DashboardLayout>
       <div className="p-6">
@@ -216,7 +223,11 @@ const Requisition = () => {
                         <TableCell>{req.total_items}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewRequisition(req)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -368,6 +379,94 @@ const Requisition = () => {
             </Card>
           </div>
         )}
+
+        {/* Dialog สำหรับดูรายละเอียดใบเบิก */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>รายละเอียดใบเบิกวัสดุ</DialogTitle>
+            </DialogHeader>
+            {selectedRequisition && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">เลขที่ใบเบิก</Label>
+                    <p className="text-lg font-semibold">{selectedRequisition.code}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">สถานะ</Label>
+                    <div className="mt-1">{getStatusBadge(selectedRequisition.status)}</div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">ผู้เบิก</Label>
+                    <p>{selectedRequisition.requester?.name || 'ไม่ระบุ'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">แผนก</Label>
+                    <p>{selectedRequisition.department || 'ไม่ระบุ'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">วันที่สร้าง</Label>
+                    <p>{new Date(selectedRequisition.created_at || '').toLocaleDateString('th-TH')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">จำนวนรายการ</Label>
+                    <p>{selectedRequisition.total_items} รายการ</p>
+                  </div>
+                </div>
+
+                {selectedRequisition.description && (
+                  <div>
+                    <Label className="text-sm font-medium">หมายเหตุ</Label>
+                    <p className="mt-1">{selectedRequisition.description}</p>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">รายการวัสดุที่เบิก</h3>
+                  {selectedRequisition.items && selectedRequisition.items.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ชื่อวัสดุ</TableHead>
+                          <TableHead>จำนวน</TableHead>
+                          <TableHead>หน่วย</TableHead>
+                          <TableHead>ราคาต่อหน่วย</TableHead>
+                          <TableHead>ราคารวม</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedRequisition.items.map((item: any) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.material?.name || 'ไม่ระบุ'}</TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>{item.material?.unit || 'ไม่ระบุ'}</TableCell>
+                            <TableCell>฿{item.unit_price?.toLocaleString() || 0}</TableCell>
+                            <TableCell>฿{item.total_price?.toLocaleString() || 0}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="text-muted-foreground">ไม่มีรายการวัสดุ</p>
+                  )}
+                </div>
+
+                {selectedRequisition.items && selectedRequisition.items.length > 0 && (
+                  <div className="flex justify-end">
+                    <div className="text-right">
+                      <p className="text-lg font-semibold">
+                        ยอดรวมทั้งสิ้น: ฿{selectedRequisition.items.reduce((total: number, item: any) => total + (item.total_price || 0), 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
       <Toaster />
     </DashboardLayout>
