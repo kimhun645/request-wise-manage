@@ -188,6 +188,10 @@ const Requisition = () => {
             <CardContent>
               {requisitionsLoading ? (
                 <div className="text-center py-8">กำลังโหลด...</div>
+              ) : requisitions.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  ไม่พบรายการใบเบิกวัสดุ
+                </div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -206,7 +210,7 @@ const Requisition = () => {
                       <TableRow key={req.id}>
                         <TableCell className="font-medium">{req.code}</TableCell>
                         <TableCell>{req.requester?.name || 'ไม่ระบุ'}</TableCell>
-                        <TableCell>{req.department}</TableCell>
+                        <TableCell>{req.department || 'ไม่ระบุ'}</TableCell>
                         <TableCell>{new Date(req.created_at || '').toLocaleDateString('th-TH')}</TableCell>
                         <TableCell>{getStatusBadge(req.status)}</TableCell>
                         <TableCell>{req.total_items}</TableCell>
