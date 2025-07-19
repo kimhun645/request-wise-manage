@@ -49,8 +49,10 @@ const Requisition = () => {
   const [scanResult, setScanResult] = useState<string>("");
   const [scannedMaterial, setScannedMaterial] = useState<any>(null);
   const [requisitionForm, setRequisitionForm] = useState({
+    requester_name: "",
     department: "",
-    description: ""
+    description: "",
+    date: new Date().toISOString().split('T')[0]
   });
 
   const getStatusBadge = (status: string) => {
@@ -137,7 +139,12 @@ const Requisition = () => {
       await createRequisition(requisitionData, items);
       
       setSelectedMaterials([]);
-      setRequisitionForm({ department: "", description: "" });
+      setRequisitionForm({ 
+        requester_name: "",
+        department: "", 
+        description: "",
+        date: new Date().toISOString().split('T')[0]
+      });
       setActiveTab("list");
     } catch (error) {
       // Error handled in hook
@@ -242,6 +249,24 @@ const Requisition = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
+                  <Label htmlFor="date">วันที่เบิก</Label>
+                  <Input 
+                    id="date" 
+                    type="date"
+                    value={requisitionForm.date}
+                    onChange={(e) => setRequisitionForm(prev => ({ ...prev, date: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="requester_name">ชื่อผู้เบิก</Label>
+                  <Input 
+                    id="requester_name" 
+                    placeholder="ระบุชื่อผู้เบิกวัสดุ" 
+                    value={requisitionForm.requester_name}
+                    onChange={(e) => setRequisitionForm(prev => ({ ...prev, requester_name: e.target.value }))}
+                  />
+                </div>
+                <div>
                   <Label htmlFor="department">แผนก</Label>
                   <Input 
                     id="department" 
@@ -251,10 +276,10 @@ const Requisition = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">รายละเอียด</Label>
+                  <Label htmlFor="description">หมายเหตุ</Label>
                   <Input 
                     id="description" 
-                    placeholder="รายละเอียดการเบิก (ถ้ามี)" 
+                    placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)" 
                     value={requisitionForm.description}
                     onChange={(e) => setRequisitionForm(prev => ({ ...prev, description: e.target.value }))}
                   />
@@ -267,12 +292,34 @@ const Requisition = () => {
                 <CardTitle>เลือกวัสดุ</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Input 
-                  placeholder="ค้นหาวัสดุ..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                
+                 <div className="flex gap-2">
+                   <Input 
+                     placeholder="ค้นหาวัสดุ..."
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     className="flex-1"
+                   />
+                   <Button 
+                     variant="outline"
+                     onClick={startScanning}
+                     disabled={isScanning}
+                     className="gap-2"
+                   >
+                     <ScanLine className="h-4 w-4" />
+                     {isScanning ? "กำลังสแกน..." : "สแกน"}
+                   </Button>
+                 </div>
+
+                 {scanResult && (
+                   <div className={`p-3 rounded-lg text-sm ${
+                     scanResult.includes('สำเร็จ') 
+                       ? 'bg-green-100 text-green-800 border border-green-200' 
+                       : 'bg-red-100 text-red-800 border border-red-200'
+                   }`}>
+                     {scanResult}
+                   </div>
+                 )}
+                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {filteredMaterials.map((material) => (
                     <div key={material.id} className="flex items-center justify-between p-3 border rounded-lg">
