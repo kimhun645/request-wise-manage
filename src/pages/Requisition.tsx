@@ -38,7 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
 const Requisition = () => {
-  const { requisitions, loading: requisitionsLoading, createRequisition, updateRequisitionStatus, deleteRequisition } = useRequisitions();
+  const { requisitions, loading: requisitionsLoading, createRequisition, deleteRequisition } = useRequisitions();
   const { materials, findMaterialByBarcode } = useMaterials();
   const { toast } = useToast();
   
@@ -214,14 +214,6 @@ const Requisition = () => {
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => updateRequisitionStatus(req.id, "approved")}
-                              disabled={req.status !== "pending"}
-                            >
-                              <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
                               variant="outline" 
