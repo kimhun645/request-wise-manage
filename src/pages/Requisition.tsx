@@ -204,10 +204,7 @@ const Requisition = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>เลขที่ใบเบิก</TableHead>
-                      <TableHead>ผู้เบิก</TableHead>
-                      <TableHead>แผนก</TableHead>
                       <TableHead>วันที่</TableHead>
-                      <TableHead>สถานะ</TableHead>
                       <TableHead>รายการ</TableHead>
                       <TableHead>การจัดการ</TableHead>
                     </TableRow>
@@ -216,10 +213,7 @@ const Requisition = () => {
                     {requisitions.map((req) => (
                       <TableRow key={req.id}>
                         <TableCell className="font-medium">{req.code}</TableCell>
-                        <TableCell>{req.requester?.name || 'ไม่ระบุ'}</TableCell>
-                        <TableCell>{req.department || 'ไม่ระบุ'}</TableCell>
                         <TableCell>{new Date(req.created_at || '').toLocaleDateString('th-TH')}</TableCell>
-                        <TableCell>{getStatusBadge(req.status)}</TableCell>
                         <TableCell>{req.total_items}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
